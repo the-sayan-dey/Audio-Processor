@@ -1,0 +1,45 @@
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///userdata.db'  # SQLite database
+db = SQLAlchemy(app)
+
+class UserData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    age = db.Column(db.Integer)
+    location = db.Column(db.String(100))
+    education = db.Column(db.String(100))
+    gender = db.Column(db.String(10))
+    # You can add more fields as needed
+
+
+
+@app.route('/', methods=['GET', 'POST'])
+def record_data():
+    if request.method == 'POST':
+        age = request.form['age']
+        location = request.form['location']
+        education = request.form['education']
+        gender = request.form['gender']
+        # You can access audio files using request.files['audio_file']
+
+        # Create a new UserData object
+        new_user_data = UserData(age=age, location=location, education=education, gender=gender)
+        # Save the object to the database
+        db.session.add(new_user_data)
+        db.session.commit()
+
+        return redirect(url_for('success'))
+    return render_template('index.html')
+
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+# Create database tables within the application context
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True)
